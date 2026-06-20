@@ -1,9 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence, useInView } from "motion/react";
-import { Instagram, Youtube, Twitter, MapPin, ArrowRight, Check, X, Loader2 } from "lucide-react";
+import { MapPin, ArrowRight, Check, X, Loader2 } from "lucide-react";
 import paiLogo from "@/assets/pai-convention.png";
-import dotLogo from "@/assets/dot-logo.png";
+import dotLogo from "@/assets/Union.png";
 import summitLogo from "@/assets/summit-logo.png";
 // Import the Supabase client you created
 import { supabase } from "@/lib/supabaseClient";
@@ -24,13 +24,11 @@ const NICHES = ["Video", "Tech", "Fashion / Lifestyle", "Photography", "Business
 
 function DotLogo({ className = "h-14 w-14" }: { className?: string }) {
   return (
-    <div className="relative flex items-center justify-center">
-      {/* Premium ambient branding glow */}
-      <div className="absolute -inset-3 rounded-full bg-gradient-to-r from-[oklch(0.7_0.25_285)] to-[oklch(0.55_0.25_240)] blur-[16px] opacity-20" />
+    <div className="flex items-center justify-center">
       <img
         src={dotLogo}
         alt="Dot Entertainments"
-        className={`relative object-contain mix-blend-multiply ${className}`}
+        className={`object-contain ${className}`}
       />
     </div>
   );
@@ -253,20 +251,6 @@ function Index() {
           </div>
         </FadeIn>
 
-        <FadeIn delay={0.5}>
-          <div className="mt-12 flex items-center gap-5">
-            {[Instagram, Youtube, Twitter].map((Icon, i) => (
-              <a
-                key={i}
-                href="#"
-                className="grid h-10 w-10 place-items-center rounded-full border border-border bg-foreground/[0.02] text-muted-foreground transition hover:border-accent/40 hover:text-foreground"
-                aria-label="Social link"
-              >
-                <Icon className="h-4 w-4" />
-              </a>
-            ))}
-          </div>
-        </FadeIn>
       </section>
 
       {/* Venue */}
@@ -283,7 +267,10 @@ function Index() {
             <div className="text-right md:pr-2">
               <div className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground">Organized by</div>
               <div className="mt-3 flex items-center justify-end">
-                <DotLogo />
+                <span className="mr-3 text-[13px] font-medium tracking-[0.2em] uppercase">Dot Entertainments</span>
+                <div className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-white p-1 shadow-sm border border-border">
+                  <img src={dotLogo} alt="Dot Entertainments" className="h-full w-full object-contain" />
+                </div>
               </div>
               <p className="mt-4 text-sm text-muted-foreground leading-relaxed">
                 Curating premium experiences<br />for India's creator economy.
@@ -296,12 +283,12 @@ function Index() {
 
           <FadeIn delay={0.2}>
             <div className="md:pl-2">
-              <div className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground">Hosted at</div>
+              <div className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground">Powered by </div>
               <div className="mt-3 flex items-center gap-3">
                 <div className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-white p-1 shadow-sm border border-border">
-                  <img src={paiLogo} alt="Pai Convention" className="h-full w-full object-contain" />
+                  <img src={paiLogo} alt="Pai Convention Hall & Catering" className="h-full w-full object-contain" />
                 </div>
-                <span className="text-[13px] font-medium tracking-[0.2em] uppercase">Pai Convention</span>
+                <span className="text-[13px] font-medium tracking-[0.2em] uppercase">Pai Convention Hall & Catering</span>
               </div>
               <p className="mt-4 text-sm text-muted-foreground leading-relaxed">
                 Pai Convention Hall,<br />Belagavi, Karnataka.
@@ -311,7 +298,12 @@ function Index() {
         </div>
 
         <FadeIn delay={0.3}>
-          <div className="mt-16 rounded-xl overflow-hidden border border-border">
+          <div className="mb-4 w-full text-left">
+            <h2 className="font-sans text-2xl sm:text-3xl leading-tight text-foreground">
+              Got confused of location?
+            </h2>
+          </div>
+          <div className="mt-8 rounded-xl overflow-hidden border border-border">
             <iframe
               src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3811.0691469024825!2d74.48878!3d15.820583!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bbf650041397155%3A0x4ef0da497e750a93!2sPai%20Convention%20Hall%20and%20Catering!5e0!3m2!1sen!2sin!4v1687123456789"
               width="100%"
@@ -333,7 +325,7 @@ function Index() {
             © 2026 Dot Entertainments
           </div>
           <div className="text-[11px] uppercase tracking-[0.25em] text-muted-foreground">
-            By invitation only
+            Developed by dotlab.in
           </div>
         </div>
       </footer>
