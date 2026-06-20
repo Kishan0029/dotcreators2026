@@ -299,9 +299,7 @@ function Index() {
 
         <FadeIn delay={0.3}>
           <div className="mb-4 w-full text-left">
-            <h2 className="font-sans text-2xl sm:text-3xl leading-tight text-foreground">
-              Got confused of location?
-            </h2>
+            
           </div>
           <div className="mt-8 rounded-xl overflow-hidden border border-border">
             <iframe
