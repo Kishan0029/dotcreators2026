@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence, useInView } from "motion/react";
 import { MapPin, ArrowRight, Check, X, Loader2 } from "lucide-react";
 import paiLogo from "@/assets/pai-convention.png";
-import dotLogo from "@/assets/Union.png";
+import dotLogo from "@/assets/logo2026.png";
 import summitLogo from "@/assets/summit-logo.png";
 // Import the Supabase client you created
 import { supabase } from "@/lib/supabaseClient";
@@ -299,7 +299,7 @@ function Index() {
 
         <FadeIn delay={0.3}>
           <div className="mb-4 w-full text-left">
-            
+          
           </div>
           <div className="mt-8 rounded-xl overflow-hidden border border-border">
             <iframe
