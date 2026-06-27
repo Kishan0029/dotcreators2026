@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence, useInView } from "motion/react";
+import { motion, AnimatePresence, useInView, useTransform, useScroll } from "motion/react";
 import { MapPin, ArrowRight, Check, X, Loader2 } from "lucide-react";
 import paiLogo from "@/assets/pai-convention.png";
 import dotLogo from "@/assets/logo2026.png";
@@ -65,6 +65,12 @@ function Index() {
   const [submitted, setSubmitted] = useState(false);
   const [form, setForm] = useState({ name: "", handle: "", niche: NICHES[0] });
   const [loaderComplete, setLoaderComplete] = useState(false);
+  const [isClient, setIsClient] = useState(false);
+
+  // Set client flag on mount to defeat server minification errors safely
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   // Listen for loader completion event
   useEffect(() => {
@@ -107,14 +113,24 @@ function Index() {
     }
   }
 
+  // SSR Guard Rule: Render a loading state during Vercel server compile
+  if (!isClient) {
+    return (
+      <main className="min-h-screen w-full flex items-center justify-center bg-background">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </main>
+    );
+  }
+
   return (
     <MouseImageTrail
       renderImageBuffer={35}
       rotationRange={24}
       images={[brand1, brand2, brand3, brand4, brand5, brand6, brand7, brand1, brand2, brand3, brand4, brand5, brand6, brand7]}
     >
-    <main className="relative min-h-screen w-full flex flex-col items-center bg-background text-foreground">
+      <main className="relative min-h-screen w-full flex flex-col items-center bg-background text-foreground overflow-x-hidden">
         <LiquidBackground />
+        
         {/* Ambient aura */}
         <div className="pointer-events-none fixed inset-0 -z-10">
           <div className="absolute left-1/2 top-[18%] h-[700px] w-[700px] -translate-x-1/2 rounded-full bg-[radial-gradient(circle_at_center,_var(--color-aura-1),_transparent_60%)] blur-3xl" />
@@ -124,7 +140,7 @@ function Index() {
         </div>
 
         {/* Header */}
-       <header className="relative z-10 w-full flex items-center justify-between px-6 py-6 sm:px-10 sm:py-8 max-w-[1400px]">
+        <header className="relative z-10 w-full flex items-center justify-between px-6 py-6 sm:px-10 sm:py-8 max-w-[1400px]">
           <DotLogo />
           <div className="flex items-center gap-2 rounded-full border border-border bg-foreground/[0.03] px-3.5 py-1.5 text-xs text-muted-foreground backdrop-blur-md">
             <span className="h-1.5 w-1.5 rounded-full bg-accent shadow-[0_0_8px_var(--accent)]" />
@@ -133,7 +149,7 @@ function Index() {
         </header>
 
         {/* Hero */}
-        <section className="relative z-10 mx-auto flex w-full max-w-3xl flex-col items-center px-6 pt-12 pb-32 text-center sm:pt-20 sm:pb-40">
+        <section className="relative z-10 mx-auto flex w-full max-w-3xl flex-col items-center px-6 pt-12 pb-24 text-center sm:pt-20 sm:pb-32">
           <FadeIn delay={0}>
             <div className="mb-6 flex justify-center">
               <img
@@ -171,7 +187,7 @@ function Index() {
 
           {/* Floating card */}
           <FadeIn delay={0.35}>
-            <div className="relative mt-14 w-full max-w-md">
+            <div className="relative mt-14 w-full max-w-md mx-auto">
               <div className="absolute -inset-8 rounded-[2rem] bg-[radial-gradient(ellipse_at_center,_var(--color-aura-1),_transparent_70%)] blur-2xl" />
               <div className="relative glass rounded-3xl p-7 sm:p-8">
                 {!submitted ? (
@@ -276,8 +292,19 @@ function Index() {
               </div>
             </div>
           </FadeIn>
-
         </section>
+
+        {/* Horizontal Experience Slider */}
+        <section className="relative z-10 mx-auto w-full px-6 pt-12 text-center">
+          <FadeIn>
+            <div className="mb-3 text-[11px] uppercase tracking-[0.3em] text-muted-foreground">— Experience</div>
+            <h2 className="font-display text-4xl leading-[1] tracking-tight sm:text-6xl">
+              Meet the Community.
+            </h2>
+          </FadeIn>
+        </section>
+        
+        <HorizontalScrollCarousel />
 
         {/* Venue */}
         <section className="relative z-10 mx-auto w-full max-w-5xl px-6 py-24 sm:py-32">
@@ -323,7 +350,7 @@ function Index() {
           </div>
 
           <FadeIn delay={0.3}>
-            <div className="mb-3 text-[11px] uppercase tracking-[0.3em] text-muted-foreground">— Location</div>
+            <div className="mt-24 mb-3 text-[11px] uppercase tracking-[0.3em] text-muted-foreground">— Location</div>
             <h4 className="font-display text-[clamp(2.25rem,4.5vw,3.5rem)] leading-tight tracking-tight">
               Got confused about the location?
             </h4>
@@ -378,7 +405,6 @@ function Index() {
   );
 }
 
-
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
@@ -387,3 +413,65 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
     </label>
   );
 }
+
+// ==========================================
+// HORIZONTAL SCROLL CAROUSEL COMPONENT
+// ==========================================
+
+const HorizontalScrollCarousel = () => {
+  const targetRef = useRef<HTMLDivElement | null>(null);
+  const { scrollYProgress } = useScroll({
+    target: targetRef,
+  });
+
+  const x = useTransform(scrollYProgress, [0, 1], ["0%", "-60%"]);
+
+  return (
+    <section ref={targetRef} className="relative h-[300vh] w-full bg-transparent">
+      <div className="sticky top-0 flex h-screen items-center overflow-hidden">
+        <motion.div style={{ x }} className="flex gap-6 px-12">
+          {summitCards.map((card) => {
+            return <Card card={card} key={card.id} />;
+          })}
+        </motion.div>
+      </div>
+    </section>
+  );
+};
+
+type CardType = {
+  url: string;
+  title: string;
+  id: number;
+};
+
+const Card = ({ card }: { card: CardType }) => {
+  return (
+    <div className="group relative h-[400px] w-[320px] sm:w-[420px] shrink-0 overflow-hidden rounded-2xl border border-border bg-card shadow-lg">
+      <div
+        style={{
+          backgroundImage: `url(${card.url})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+        className="absolute inset-0 z-0 transition-transform duration-500 group-hover:scale-105"
+      />
+      <div className="absolute inset-0 z-10 bg-gradient-to-t from-background/90 via-background/20 to-transparent" />
+      <div className="absolute bottom-0 left-0 right-0 z-20 p-6 text-left">
+        <p className="text-xl font-display uppercase tracking-wider text-foreground">
+          {card.title}
+        </p>
+      </div>
+    </div>
+  );
+};
+
+const summitCards: CardType[] = [
+  { url: brand1, title: "Top Creators", id: 1 },
+  { url: brand2, title: "Tech Innovators", id: 2 },
+  { url: brand3, title: "Fashion & Lifestyle", id: 3 },
+  { url: brand4, title: "Business Founders", id: 4 },
+  { url: brand5, title: "Media Experts", id: 5 },
+  { url: brand6, title: "Filmmakers", id: 6 },
+  { url: brand7, title: "Keynote Speakers", id: 7 },
+];
