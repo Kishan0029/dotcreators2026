@@ -295,16 +295,9 @@ function Index() {
         </section>
 
         {/* Horizontal Experience Slider */}
-        <section className="relative z-10 mx-auto w-full px-6 pt-12 text-center">
-          <FadeIn>
-            <div className="mb-3 text-[11px] uppercase tracking-[0.3em] text-muted-foreground">— Experience</div>
-            <h2 className="font-display text-4xl leading-[1] tracking-tight sm:text-6xl">
-              Meet the Community.
-            </h2>
-          </FadeIn>
-        </section>
         
-        <HorizontalScrollCarousel />
+        
+  
 
         {/* Venue */}
         <section className="relative z-10 mx-auto w-full max-w-5xl px-6 py-24 sm:py-32">
@@ -414,64 +407,3 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-// ==========================================
-// HORIZONTAL SCROLL CAROUSEL COMPONENT
-// ==========================================
-
-const HorizontalScrollCarousel = () => {
-  const targetRef = useRef<HTMLDivElement | null>(null);
-  const { scrollYProgress } = useScroll({
-    target: targetRef,
-  });
-
-  const x = useTransform(scrollYProgress, [0, 1], ["0%", "-60%"]);
-
-  return (
-    <section ref={targetRef} className="relative h-[300vh] w-full bg-transparent">
-      <div className="sticky top-0 flex h-screen items-center overflow-hidden">
-        <motion.div style={{ x }} className="flex gap-6 px-12">
-          {summitCards.map((card) => {
-            return <Card card={card} key={card.id} />;
-          })}
-        </motion.div>
-      </div>
-    </section>
-  );
-};
-
-type CardType = {
-  url: string;
-  title: string;
-  id: number;
-};
-
-const Card = ({ card }: { card: CardType }) => {
-  return (
-    <div className="group relative h-[400px] w-[320px] sm:w-[420px] shrink-0 overflow-hidden rounded-2xl border border-border bg-card shadow-lg">
-      <div
-        style={{
-          backgroundImage: `url(${card.url})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        }}
-        className="absolute inset-0 z-0 transition-transform duration-500 group-hover:scale-105"
-      />
-      <div className="absolute inset-0 z-10 bg-gradient-to-t from-background/90 via-background/20 to-transparent" />
-      <div className="absolute bottom-0 left-0 right-0 z-20 p-6 text-left">
-        <p className="text-xl font-display uppercase tracking-wider text-foreground">
-          {card.title}
-        </p>
-      </div>
-    </div>
-  );
-};
-
-const summitCards: CardType[] = [
-  { url: brand1, title: "Top Creators", id: 1 },
-  { url: brand2, title: "Tech Innovators", id: 2 },
-  { url: brand3, title: "Fashion & Lifestyle", id: 3 },
-  { url: brand4, title: "Business Founders", id: 4 },
-  { url: brand5, title: "Media Experts", id: 5 },
-  { url: brand6, title: "Filmmakers", id: 6 },
-  { url: brand7, title: "Keynote Speakers", id: 7 },
-];
