@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Outlet, createRootRouteWithContext, HeadContent, Scripts } from "@tanstack/react-router";
 import { useState } from "react";
+import { Analytics } from "@vercel/analytics/react";
 import { OBYSLoader } from "../components/OBYSLoader";
 import appCss from "../styles.css?url";
 
@@ -30,6 +31,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       <body>
         {children}
         <Scripts />
+        <Analytics />
       </body>
     </html>
   ),
