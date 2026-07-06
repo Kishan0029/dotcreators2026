@@ -59,6 +59,7 @@ export default function CustomCursor() {
 
     // Animation Loop using Spring Physics
     let animationFrameId: number;
+    let phase = 0; // Accumulates phase for the left-right bounce wobble oscillation
     const stiffness = 0.12; // Elasticity constant
     const damping = 0.70;   // Resistance constant
 
@@ -79,26 +80,50 @@ export default function CustomCursor() {
       // Velocity magnitude (speed)
       const speed = Math.sqrt(velocity.current.x ** 2 + velocity.current.y ** 2);
 
-      if (cursorRef.current) {
-        // Move wrapper div (hotspot offset is 24px for a 48px square container)
-        cursorRef.current.style.transform = `translate3d(${current.current.x - 24}px, ${current.current.y - 24}px, 0)`;
+      // Bounce settings (simulating a bouncing/wobbling ball)
+      const bounceHeight = 16;  // Vertical bounce range (px)
+      const wobbleRange = 22;   // Left-right wobble rotation angle (deg)
 
-        // Motion Blur based on velocity (max blur of 8px to keep it readable)
+      if (speed > 0.4) {
+        // Phase increments based on velocity speed
+        phase += speed * 0.15;
+      } else {
+        // Damp the phase to stop bouncing when cursor is still
+        phase = phase * 0.82;
+      }
+
+      // Smooth transition factors based on speed so it doesn't bounce when static
+      const speedFactor = Math.min(speed * 0.08, 1);
+      const bounceY = -Math.abs(Math.sin(phase)) * bounceHeight * speedFactor;
+      const wobbleAngle = Math.sin(phase) * wobbleRange * speedFactor;
+
+      if (cursorRef.current) {
+        // Move wrapper div and apply vertical bounce offset
+        cursorRef.current.style.transform = `translate3d(${current.current.x - 24}px, ${current.current.y - 24 + bounceY}px, 0)`;
+
+        // Motion Blur based on velocity
         const maxBlur = 8;
         const blurValue = Math.min(speed * 0.12, maxBlur);
         cursorRef.current.style.filter = blurValue > 0.5 ? `blur(${blurValue}px)` : "none";
 
-        // Squash and Stretch: scale in direction of movement
-        const scaleX = 1 + Math.min(speed * 0.006, 0.4);
-        const scaleY = 1 - Math.min(speed * 0.004, 0.3);
+        // Squash and Stretch: combines general speed stretching with dynamic bounce squash/stretch
+        const bounceSine = Math.sin(phase * 2); // Double frequency for squash at ground/peak matches
+        const baseScaleX = 1 + Math.min(speed * 0.005, 0.25);
+        const baseScaleY = 1 - Math.min(speed * 0.003, 0.20);
+
+        const scaleModX = 1 + (bounceSine * 0.12 * speedFactor);
+        const scaleModY = 1 - (bounceSine * 0.12 * speedFactor);
+
+        const scaleX = baseScaleX * scaleModX;
+        const scaleY = baseScaleY * scaleModY;
 
         // Angle of motion (in degrees)
-        const angle = Math.atan2(velocity.current.y, velocity.current.x) * (180 / Math.PI);
+        const moveAngle = Math.atan2(velocity.current.y, velocity.current.x) * (180 / Math.PI);
 
-        // Apply rotation to align stretch with direction, then counter-rotate parent rotation inside
+        // Apply rotation combining direction and the left-right wobble oscillation
         const img = cursorRef.current.querySelector("img");
         if (img) {
-          img.style.transform = `rotate(${angle}deg) scale(${scaleX}, ${scaleY}) rotate(${-angle}deg)`;
+          img.style.transform = `rotate(${moveAngle + wobbleAngle}deg) scale(${scaleX}, ${scaleY}) rotate(${-moveAngle}deg)`;
         }
       }
 
