@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence, useInView, useTransform, useScroll } from "motion/react";
-import { MapPin, ArrowRight, Check, X, Loader2 } from "lucide-react";
+import { MapPin, ArrowRight, Check, X, Loader2, Upload } from "lucide-react";
 import paiLogo from "@/assets/pai-convention.png";
 import dotLogo from "@/assets/logo2026.png";
 import dotLogoPng from "@/assets/dotlogo.png";
@@ -65,11 +65,22 @@ function Index() {
   const [isClient, setIsClient] = useState(false);
   const [currentFrame, setCurrentFrame] = useState(14);
   const [currentFrameMobile, setCurrentFrameMobile] = useState(15);
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 
   // Set client flag on mount to defeat server minification errors safely
   useEffect(() => {
     setIsClient(true);
   }, []);
+
+  // Revoke preview object URLs to avoid memory leaks
+  useEffect(() => {
+    return () => {
+      if (photoPreview) {
+        URL.revokeObjectURL(photoPreview);
+      }
+    };
+  }, [photoPreview]);
 
   // Cycle background images every 3 seconds
   useEffect(() => {
@@ -91,6 +102,22 @@ function Index() {
     return () => window.removeEventListener('loader-complete', handleLoaderComplete);
   }, []);
 
+  function handlePhotoSelect(file: File) {
+    if (!file.type.startsWith("image/")) {
+      alert("Please upload an image file.");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      alert("Photo must be smaller than 5MB.");
+      return;
+    }
+    setPhotoFile(file);
+    if (photoPreview) {
+      URL.revokeObjectURL(photoPreview);
+    }
+    setPhotoPreview(URL.createObjectURL(file));
+  }
+
   // Modified to handle async backend insert
   async function submitRegistration(e: React.FormEvent) {
     e.preventDefault();
@@ -98,6 +125,48 @@ function Index() {
 
     setLoading(true);
     try {
+      const isPlaceholder = !import.meta.env.VITE_SUPABASE_URL || import.meta.env.VITE_SUPABASE_URL.includes("placeholder.supabase.co");
+
+      if (isPlaceholder) {
+        // Simulated network delay
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+        console.log("Demo Mode: Simulated successful registration submit:", {
+          full_name: form.name.trim(),
+          email: email.trim(),
+          social_handle: form.handle.trim(),
+          niche: form.niche,
+          photo_name: photoFile ? photoFile.name : null
+        });
+        setSubmitted(true);
+        return;
+      }
+
+      let photoUrl = "";
+      if (photoFile) {
+        const fileExt = photoFile.name.split('.').pop();
+        const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
+        const filePath = `${fileName}`;
+
+        // Upload photo to Supabase Storage in 'registrations' bucket
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from("registrations")
+          .upload(filePath, photoFile, {
+            cacheControl: "3600",
+            upsert: false
+          });
+
+        if (uploadError) {
+          throw uploadError;
+        }
+
+        // Get the public URL for the uploaded photo
+        const { data: { publicUrl } } = supabase.storage
+          .from("registrations")
+          .getPublicUrl(filePath);
+
+        photoUrl = publicUrl;
+      }
+
       const { data, error } = await supabase
         .from("registrations")
         .insert([
@@ -106,6 +175,7 @@ function Index() {
             email: email.trim(),
             social_handle: form.handle.trim(),
             niche: form.niche,
+            photo_url: photoUrl || null,
           }
         ]);
 
@@ -289,6 +359,91 @@ function Index() {
                         >
                           {NICHES.map((n) => <option key={n} value={n} className="bg-card text-foreground">{n}</option>)}
                         </select>
+                      </Field>
+                      <Field label="Creator Photo">
+                        <div
+                          className={`relative flex flex-col items-center justify-center border border-dashed rounded-xl p-6 transition-all cursor-pointer ${
+                            photoPreview
+                              ? "border-accent/40 bg-foreground/[0.02]"
+                              : "border-border hover:border-accent/60 bg-foreground/[0.01] hover:bg-foreground/[0.02]"
+                          }`}
+                          onDragOver={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                          }}
+                          onDrop={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            if (loading) return;
+                            const files = e.dataTransfer.files;
+                            if (files && files[0]) {
+                              handlePhotoSelect(files[0]);
+                            }
+                          }}
+                          onClick={() => {
+                            if (!loading && !photoPreview) {
+                              document.getElementById("photo-upload-input")?.click();
+                            }
+                          }}
+                        >
+                          <input
+                            id="photo-upload-input"
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            disabled={loading}
+                            onChange={(e) => {
+                              const files = e.target.files;
+                              if (files && files[0]) {
+                                handlePhotoSelect(files[0]);
+                              }
+                            }}
+                          />
+                          
+                          {photoPreview ? (
+                            <div className="flex items-center gap-4 w-full">
+                              <div className="relative h-16 w-16 rounded-full overflow-hidden border border-border bg-muted shrink-0">
+                                <img
+                                  src={photoPreview}
+                                  alt="Preview"
+                                  className="h-full w-full object-cover"
+                                />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-foreground truncate">
+                                  {photoFile?.name}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                  {(photoFile?.size ? photoFile.size / (1024 * 1024) : 0).toFixed(2)} MB
+                                </p>
+                              </div>
+                              <button
+                                type="button"
+                                disabled={loading}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setPhotoFile(null);
+                                  setPhotoPreview(null);
+                                }}
+                                className="p-2 rounded-lg bg-foreground/[0.03] hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors disabled:opacity-50"
+                              >
+                                <X className="h-4 w-4" />
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="text-center py-2 w-full">
+                              <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-foreground/[0.03] text-muted-foreground mb-3">
+                                <Upload className="h-5 w-5 text-muted-foreground" />
+                              </div>
+                              <p className="text-xs font-medium text-foreground">
+                                Click or drag photo here
+                              </p>
+                              <p className="text-[10px] text-muted-foreground mt-1">
+                                PNG, JPG or WEBP up to 5MB
+                              </p>
+                            </div>
+                          )}
+                        </div>
                       </Field>
                       <motion.button
                         type="submit"
