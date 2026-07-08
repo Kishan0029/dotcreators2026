@@ -358,7 +358,7 @@ function Index() {
 
                 {/* WhatsApp Button */}
                 <motion.a
-                  href="https://wa.me/917483104946?text=Hi,%20I'm%20interested%20in%20joining%20the%20Creator%20Summit%202026."
+                  href="https://wa.me/919187127114?text=Hi,%20I'm%20interested%20in%20joining%20the%20Creator%20Summit%202026."
                   target="_blank"
                   rel="noopener noreferrer"
                   whileHover={{ scale: 1.02, translateY: -1 }}
