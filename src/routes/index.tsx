@@ -1,7 +1,8 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence, useInView, useTransform, useScroll } from "motion/react";
+import { motion, AnimatePresence, useInView } from "motion/react";
 import { MapPin, ArrowRight, Check, X, Loader2, Upload } from "lucide-react";
+import confetti from "canvas-confetti";
 import paiLogo from "@/assets/pai-convention.png";
 import dotLogo from "@/assets/logo2026.png";
 import dotLogoPng from "@/assets/dotlogo.png";
@@ -56,6 +57,66 @@ function FadeIn({ children, delay = 0, y = 24 }: { children: React.ReactNode; de
   );
 }
 
+const fireConfetti = () => {
+  // Center burst
+  confetti({
+    particleCount: 100,
+    spread: 70,
+    origin: { y: 0.6 },
+    colors: ['#8A2BE2', '#4B0082', '#9370DB', '#4169E1', '#00BFFF', '#6A0DAD', '#FFD700']
+  });
+
+  // Creator Emoji explosion
+  setTimeout(() => {
+    (confetti as any)({
+      particleCount: 35,
+      spread: 60,
+      origin: { y: 0.55 },
+      flat: true,
+      scalar: 2.2,
+      shapes: ['emoji'],
+      shapeOptions: {
+        emoji: {
+          value: ['🎥', '📸', '🌟', '👑', '🎉', '✨', '🎬', '💡', '🚀', '🎨']
+        }
+      }
+    });
+  }, 150);
+
+  // Left cannon
+  setTimeout(() => {
+    confetti({
+      particleCount: 50,
+      angle: 60,
+      spread: 55,
+      origin: { x: 0, y: 0.85 },
+      colors: ['#8A2BE2', '#4B0082', '#9370DB', '#4169E1', '#00BFFF']
+    });
+  }, 300);
+
+  // Right cannon
+  setTimeout(() => {
+    confetti({
+      particleCount: 50,
+      angle: 120,
+      spread: 55,
+      origin: { x: 1, y: 0.85 },
+      colors: ['#8A2BE2', '#4B0082', '#9370DB', '#4169E1', '#00BFFF']
+    });
+  }, 500);
+
+  // Gentle snow confetti for secondary effect
+  setTimeout(() => {
+    confetti({
+      particleCount: 40,
+      decay: 0.91,
+      scalar: 0.8,
+      origin: { y: 0.35 },
+      colors: ['#8A2BE2', '#9370DB', '#FFD700']
+    });
+  }, 750);
+};
+
 function Index() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
@@ -68,19 +129,11 @@ function Index() {
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 
+
   // Set client flag on mount to defeat server minification errors safely
   useEffect(() => {
     setIsClient(true);
   }, []);
-
-  // Revoke preview object URLs to avoid memory leaks
-  useEffect(() => {
-    return () => {
-      if (photoPreview) {
-        URL.revokeObjectURL(photoPreview);
-      }
-    };
-  }, [photoPreview]);
 
   // Cycle background images every 3 seconds
   useEffect(() => {
@@ -112,10 +165,12 @@ function Index() {
       return;
     }
     setPhotoFile(file);
-    if (photoPreview) {
-      URL.revokeObjectURL(photoPreview);
-    }
-    setPhotoPreview(URL.createObjectURL(file));
+    
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPhotoPreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
   }
 
   // Modified to handle async backend insert
@@ -138,6 +193,7 @@ function Index() {
           photo_name: photoFile ? photoFile.name : null
         });
         setSubmitted(true);
+        fireConfetti();
         return;
       }
 
@@ -184,6 +240,7 @@ function Index() {
       }
 
       setSubmitted(true);
+      fireConfetti();
     } catch (error: any) {
       console.error("Error submitting registration:", error.message);
       alert(`Oops! Something went wrong: ${error.message || "Please try again."}`);
@@ -470,18 +527,27 @@ function Index() {
                 </>
               ) : (
                 <motion.div
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5 }}
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ type: "spring", stiffness: 100, damping: 15 }}
                   className="py-6 text-center"
                 >
                   <motion.div
                     initial={{ scale: 0, rotate: -30 }}
                     animate={{ scale: 1, rotate: 0 }}
                     transition={{ delay: 0.1, type: "spring", stiffness: 200, damping: 14 }}
-                    className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-gradient-to-br from-[oklch(0.7_0.25_285)] to-[oklch(0.55_0.25_240)] shadow-[0_0_40px_oklch(0.6_0.28_285_/_0.5)]"
+                    className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-gradient-to-br from-[#c084fc] to-[#6366f1] shadow-[0_0_40px_rgba(168,85,247,0.4)]"
                   >
-                    <Check className="h-7 w-7 text-white" strokeWidth={3} />
+                    <svg className="h-7 w-7 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3}>
+                      <motion.path
+                        initial={{ pathLength: 0 }}
+                        animate={{ pathLength: 1 }}
+                        transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
                   </motion.div>
                   <h3 className="mt-6 font-display text-3xl leading-tight text-foreground">You're on the list.</h3>
                   <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
@@ -603,6 +669,40 @@ function Index() {
             border-color: var(--accent);
             background: oklch(1 0 0 / 0.95);
             box-shadow: 0 0 0 3px oklch(0.65 0.22 285 / 0.25), inset 0 1px 2px oklch(0 0 0 / 0.03);
+          }
+          @keyframes shine {
+            0% {
+              left: -150%;
+            }
+            50% {
+              left: 150%;
+            }
+            100% {
+              left: 150%;
+            }
+          }
+          .animate-shine {
+            position: absolute;
+            top: 0;
+            width: 150%;
+            height: 100%;
+            background: linear-gradient(
+              to right,
+              transparent,
+              rgba(255, 255, 255, 0.4) 50%,
+              transparent
+            );
+            transform: skewX(-15deg);
+            animation: shine 4.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+          }
+          @keyframes border-rainbow {
+            0% { border-color: rgba(168, 85, 247, 0.35); box-shadow: 0 0 15px rgba(168, 85, 247, 0.2); }
+            33% { border-color: rgba(236, 72, 153, 0.35); box-shadow: 0 0 15px rgba(236, 72, 153, 0.2); }
+            66% { border-color: rgba(16, 185, 129, 0.35); box-shadow: 0 0 15px rgba(16, 185, 129, 0.2); }
+            100% { border-color: rgba(168, 85, 247, 0.35); box-shadow: 0 0 15px rgba(168, 85, 247, 0.2); }
+          }
+          .animate-neon-border {
+            animation: border-rainbow 8s linear infinite;
           }
         `}</style>
     </main>
