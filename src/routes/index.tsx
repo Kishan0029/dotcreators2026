@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence, useInView } from "motion/react";
-import { MapPin, ArrowRight, Check, X, Loader2, Upload } from "lucide-react";
+import { MapPin, ArrowRight, Check, X, Loader2, Upload, AlertCircle } from "lucide-react";
 import confetti from "canvas-confetti";
 import paiLogo from "@/assets/pai-convention.png";
 import dotLogo from "@/assets/logo2026.png";
@@ -193,7 +193,6 @@ function Index() {
           photo_name: photoFile ? photoFile.name : null
         });
         setSubmitted(true);
-        fireConfetti();
         return;
       }
 
@@ -240,7 +239,6 @@ function Index() {
       }
 
       setSubmitted(true);
-      fireConfetti();
     } catch (error: any) {
       console.error("Error submitting registration:", error.message);
       alert(`Oops! Something went wrong: ${error.message || "Please try again."}`);
@@ -527,33 +525,109 @@ function Index() {
                 </>
               ) : (
                 <motion.div
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ type: "spring", stiffness: 100, damping: 15 }}
-                  className="py-6 text-center"
+                  initial="hidden"
+                  animate="visible"
+                  variants={{
+                    hidden: { opacity: 0 },
+                    visible: {
+                      opacity: 1,
+                      transition: {
+                        staggerChildren: 0.12,
+                        delayChildren: 0.05
+                      }
+                    }
+                  }}
+                  className="py-6 text-center flex flex-col items-center justify-center"
                 >
+                  {/* Glowing Radar Icon */}
                   <motion.div
-                    initial={{ scale: 0, rotate: -30 }}
-                    animate={{ scale: 1, rotate: 0 }}
-                    transition={{ delay: 0.1, type: "spring", stiffness: 200, damping: 14 }}
-                    className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-gradient-to-br from-[#c084fc] to-[#6366f1] shadow-[0_0_40px_rgba(168,85,247,0.4)]"
+                    variants={{
+                      hidden: { opacity: 0, scale: 0.8 },
+                      visible: { opacity: 1, scale: 1, transition: { type: "spring", stiffness: 100 } }
+                    }}
+                    className="relative w-24 h-24 flex items-center justify-center mb-6"
                   >
-                    <svg className="h-7 w-7 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={3}>
-                      <motion.path
-                        initial={{ pathLength: 0 }}
-                        animate={{ pathLength: 1 }}
-                        transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M5 13l4 4L19 7"
-                      />
-                    </svg>
+                    {/* Ring 1 (Pulse) */}
+                    <motion.div
+                      animate={{
+                        scale: [1, 1.4, 1],
+                        opacity: [0.4, 0, 0.4],
+                      }}
+                      transition={{
+                        duration: 3,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                      }}
+                      className="absolute inset-0 rounded-full border border-purple-500/30"
+                    />
+                    {/* Ring 2 (Pulse Delay) */}
+                    <motion.div
+                      animate={{
+                        scale: [1, 1.7, 1],
+                        opacity: [0.2, 0, 0.2],
+                      }}
+                      transition={{
+                        duration: 3,
+                        delay: 1.5,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                      }}
+                      className="absolute inset-0 rounded-full border border-indigo-500/20"
+                    />
+                    {/* Main Circle and Icon */}
+                    <div className="relative z-10 grid h-16 w-16 place-items-center rounded-full bg-gradient-to-br from-[#c084fc] to-[#6366f1] shadow-[0_0_35px_rgba(168,85,247,0.45)]">
+                      <AlertCircle className="h-8 w-8 text-white" />
+                    </div>
                   </motion.div>
-                  <h3 className="mt-6 font-display text-3xl leading-tight text-foreground">You're on the list.</h3>
-                  <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
-                    Your registration interest is logged. Keep an eye on your inbox for your official digital entry pass once dates are finalized.
-                  </p>
-                  <div className="mt-6 text-[10px] uppercase tracking-[0.3em] text-muted-foreground">— Connect • Collaborate • Grow</div>
+
+                  {/* Pulsing Status Badge */}
+                  <motion.div
+                    variants={{
+                      hidden: { opacity: 0, y: 10 },
+                      visible: { opacity: 1, y: 0 }
+                    }}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-purple-500/25 bg-purple-500/5 px-3 py-1 text-[9px] font-bold tracking-[0.25em] uppercase text-purple-600 mb-3"
+                  >
+                    <span className="h-1.5 w-1.5 rounded-full bg-purple-500 animate-pulse" />
+                    Status Update
+                  </motion.div>
+
+                  {/* Serif Notice Heading */}
+                  <motion.h3
+                    variants={{
+                      hidden: { opacity: 0, y: 15 },
+                      visible: { opacity: 1, y: 0 }
+                    }}
+                    className="font-display text-4xl leading-tight text-foreground font-semibold"
+                  >
+                    Notice
+                  </motion.h3>
+
+                  {/* Description Paragraph */}
+                  <motion.p
+                    variants={{
+                      hidden: { opacity: 0, y: 15 },
+                      visible: { opacity: 1, y: 0 }
+                    }}
+                    className="mt-4 text-sm leading-relaxed text-muted-foreground max-w-sm px-4"
+                  >
+                    Sorry, we are not accepting responses right now. If there are any changes, we will reach out to you.
+                  </motion.p>
+
+                  {/* Divider and Footer Tagline */}
+                  <motion.div
+                    variants={{
+                      hidden: { opacity: 0 },
+                      visible: { opacity: 0.7 }
+                    }}
+                    className="mt-8 flex items-center justify-center gap-2.5 text-[9px] font-semibold uppercase tracking-[0.3em] text-muted-foreground/80"
+                  >
+                    <span>Connect</span>
+                    <span className="h-1 w-1 rounded-full bg-[#c084fc]" />
+                    <span>Collaborate</span>
+                    <span className="h-1 w-1 rounded-full bg-[#c084fc]" />
+                    <span>Grow</span>
+                  </motion.div>
                 </motion.div>
               )}
             </div>
