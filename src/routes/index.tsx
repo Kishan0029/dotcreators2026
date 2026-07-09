@@ -443,173 +443,23 @@ function Index() {
 
                 {/* Description */}
                 <p className="text-sm sm:text-[14px] leading-relaxed text-muted-foreground/95 max-w-sm px-2 mb-6">
-                  Thank you for the overwhelming response. Applications are now closed. If you'd still like to be considered, submit your details below and we'll review your request.
+                  Thank you for the overwhelming response. Applications are now closed. If you'd still like to be considered, request consideration via WhatsApp.
                 </p>
 
-                {/* Waitlist Form */}
-                {!waitlistSubmitted ? (
-                  <form onSubmit={submitWaitlist} className="w-full max-w-sm mt-4 mb-6 space-y-4 text-left">
-                    <Field label="Full Name">
-                      <input
-                        required
-                        disabled={waitlistLoading}
-                        value={waitlistName}
-                        onChange={(e) => setWaitlistName(e.target.value)}
-                        className="input disabled:opacity-50"
-                        placeholder="Enter your full name"
-                      />
-                    </Field>
-                    <Field label="Instagram / YouTube Profile">
-                      <input
-                        required
-                        disabled={waitlistLoading}
-                        value={waitlistHandle}
-                        onChange={(e) => setWaitlistHandle(e.target.value)}
-                        className="input disabled:opacity-50"
-                        placeholder="https://instagram.com/yourusername"
-                      />
-                    </Field>
-
-                    <div className="block">
-                      <span className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.2em] text-foreground/75">Creator Photo</span>
-                      <div
-                        className={`relative flex flex-col items-center justify-center border border-dashed rounded-xl p-6 transition-all cursor-pointer ${waitlistPhotoPreview
-                            ? "border-accent/40 bg-white/60 backdrop-blur-[4px]"
-                            : "border-border/80 hover:border-accent/60 bg-white/40 hover:bg-white/60 backdrop-blur-[4px]"
-                          }`}
-                        onDragOver={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                        }}
-                        onDrop={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          if (waitlistLoading) return;
-                          const files = e.dataTransfer.files;
-                          if (files && files[0]) {
-                            handleWaitlistPhotoSelect(files[0]);
-                          }
-                        }}
-                        onClick={() => {
-                          if (!waitlistLoading && !waitlistPhotoPreview) {
-                            document.getElementById("waitlist-photo-upload-input")?.click();
-                          }
-                        }}
-                      >
-                        <input
-                          id="waitlist-photo-upload-input"
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          disabled={waitlistLoading}
-                          onChange={(e) => {
-                            const files = e.target.files;
-                            if (files && files[0]) {
-                              handleWaitlistPhotoSelect(files[0]);
-                            }
-                          }}
-                        />
-
-                        {waitlistPhotoPreview ? (
-                          <div className="flex items-center gap-4 w-full">
-                            <div className="relative h-16 w-16 rounded-full overflow-hidden border border-border bg-muted shrink-0">
-                              <img
-                                src={waitlistPhotoPreview}
-                                alt="Preview"
-                                className="h-full w-full object-cover"
-                              />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium text-foreground truncate">
-                                {waitlistPhotoFile?.name}
-                              </p>
-                              <p className="text-xs text-muted-foreground">
-                                {(waitlistPhotoFile?.size ? waitlistPhotoFile.size / (1024 * 1024) : 0).toFixed(2)} MB
-                              </p>
-                            </div>
-                            <button
-                              type="button"
-                              disabled={waitlistLoading}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setWaitlistPhotoFile(null);
-                                setWaitlistPhotoPreview(null);
-                              }}
-                              className="p-2 rounded-lg bg-foreground/[0.03] hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors disabled:opacity-50"
-                            >
-                              <X className="h-4 w-4" />
-                            </button>
-                          </div>
-                        ) : (
-                          <div className="text-center py-2 w-full">
-                            <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-foreground/[0.03] text-muted-foreground mb-3">
-                              <Upload className="h-5 w-5 text-muted-foreground" />
-                            </div>
-                            <p className="text-xs font-medium text-foreground">
-                              Upload a recent profile photo
-                            </p>
-                            <p className="text-[10px] text-muted-foreground mt-1">
-                              PNG, JPG, or WEBP • Maximum 5 MB
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    <motion.button
-                      type="submit"
-                      disabled={waitlistLoading}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      className="group relative overflow-hidden flex w-full items-center justify-center gap-2 rounded-xl bg-foreground px-4 py-3.5 text-sm font-medium text-primary-foreground transition-colors hover:text-indigo-300 disabled:bg-foreground/60 mt-2"
-                    >
-                      <div className="relative z-10 flex items-center gap-2">
-                        {waitlistLoading ? (
-                          <>
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                            Requesting Consideration...
-                          </>
-                        ) : (
-                          <>
-                            Request Consideration
-                            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-                          </>
-                        )}
-                      </div>
-                    </motion.button>
-                  </form>
-                ) : (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="w-full max-w-sm py-4 px-3 bg-purple-500/5 border border-purple-500/10 rounded-xl text-center mb-6 text-xs text-purple-700 font-medium"
-                  >
-                    ✨ Your request has been submitted for consideration. Our team will review your profile shortly.
-                  </motion.div>
-                )}
-
-                {/* Queries Call-to-action */}
-                <div className="w-full flex flex-col items-center border-t border-black/[0.04] pt-6 mb-2">
-                  <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground/75 mb-1">
-                    Have Questions?
-                  </span>
-                  <p className="text-[11px] text-muted-foreground/80 mb-3 max-w-xs text-center px-4 leading-normal">
-                    Need assistance regarding your request? Contact our team on WhatsApp.
-                  </p>
-                  <motion.a
-                    href="https://wa.me/919187127114?text=Hi,%20I'm%20interested%20in%20joining%20the%20Creator%20Summit%202026."
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    whileHover={{ scale: 1.02, translateY: -1 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="inline-flex items-center justify-center gap-2.5 rounded-xl border border-black/[0.08] hover:border-black/20 bg-white hover:bg-black/[0.01] px-5 py-3 text-xs font-semibold text-foreground shadow-[0_2px_8px_rgba(0,0,0,0.02)] transition-all duration-300 w-full max-w-[240px]"
-                  >
-                    <svg viewBox="0 0 24 24" className="h-4 w-4 text-[#25D366] fill-current" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M12.012 2c-5.506 0-9.989 4.478-9.99 9.984a9.96 9.96 0 001.37 5.016L2 22l5.13-1.346a9.93 9.93 0 004.881 1.343h.005c5.505 0 9.99-4.478 9.99-9.985C22.007 6.476 17.519 2 12.012 2zm0 18.29h-.003a8.25 8.25 0 01-4.215-1.161l-.302-.18-3.13.82.836-3.048-.198-.314a8.27 8.27 0 01-1.267-4.42c.002-4.547 3.702-8.241 8.253-8.241 4.544 0 8.243 3.693 8.245 8.242-.002 4.549-3.7 8.243-8.253 8.243zm4.52-6.162c-.247-.124-1.464-.722-1.692-.805-.227-.083-.393-.124-.559.124-.166.248-.64.805-.785.969-.145.165-.29.185-.538.062a7.65 7.65 0 01-1.996-1.23 8.41 8.41 0 01-1.38-1.716c-.246-.414-.026-.638.18-.843.187-.184.413-.476.62-.714.062-.072.124-.145.18-.217.186-.31.093-.58-.047-.858-.14-.278-.559-1.343-.765-1.838-.2-.486-.4-.423-.559-.431l-.476-.008c-.165 0-.434.062-.661.31-.228.248-.868.847-.868 2.066 0 1.22.888 2.397 1.012 2.562.124.165 1.748 2.67 4.235 3.74.59.255 1.053.408 1.411.521.593.188 1.133.162 1.559.098.475-.072 1.464-.599 1.67-.178.208.423.208.785.104.91-.104.124-.559.722-.806.846z" />
-                    </svg>
-                    Reach out on WhatsApp
-                  </motion.a>
-                </div>
+                {/* CTA WhatsApp Button */}
+                <motion.a
+                  href="https://wa.me/919187127114?text=Hi,%20I'm%20interested%20in%20joining%20the%20Creator%20Summit%202026."
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="group relative overflow-hidden flex w-full items-center justify-center gap-2 rounded-xl bg-foreground px-4 py-3.5 text-sm font-medium text-primary-foreground transition-colors hover:text-indigo-300 w-full max-w-sm mt-4 mb-6"
+                >
+                  <div className="relative z-10 flex items-center gap-2">
+                    Request Consideration
+                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                  </div>
+                </motion.a>
 
                 {/* Footer */}
                 <div className="mt-4 pt-6 border-t border-black/[0.04] w-full flex items-center justify-center gap-3 text-[9px] font-bold tracking-[0.3em] text-muted-foreground/60 uppercase">
@@ -620,173 +470,11 @@ function Index() {
                   <span>Grow</span>
                 </div>
               </motion.div>
-            ) : !submitted ? (
-              <div className="relative glass rounded-3xl p-7 sm:p-8">
-                <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-border bg-foreground/[0.03] px-3 py-1 text-[10px] uppercase tracking-[0.25em] text-muted-foreground">
-                  <span className="block h-1.5 w-1.5 rounded-full bg-accent animate-blink" />
-                  Soon · Date to be Announced
-                </div>
-                <h2 className="font-display text-3xl leading-tight sm:text-4xl text-foreground">
-                  Register to Join
-                </h2>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  Register your interest to secure your creator pass.
-                </p>
-                <form onSubmit={submitRegistration} className="mt-6 space-y-4 text-left">
-                  <Field label="Full name">
-                    <input
-                      required
-                      disabled={loading}
-                      value={form.name}
-                      onChange={(e) => setForm({ ...form, name: e.target.value })}
-                      className="input disabled:opacity-50"
-                      placeholder="Your name"
-                    />
-                  </Field>
-                  <Field label="Invitation email address">
-                    <input
-                      type="email"
-                      required
-                      disabled={loading}
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="input disabled:opacity-50"
-                      placeholder="you@example.com"
-                    />
-                  </Field>
-                  <Field label="Instagram / YouTube Link or Handle">
-                    <input
-                      required
-                      disabled={loading}
-                      value={form.handle}
-                      onChange={(e) => setForm({ ...form, handle: e.target.value })}
-                      className="input disabled:opacity-50"
-                      placeholder="https://instagram.com/yourhandle"
-                    />
-                  </Field>
-                  <Field label="Primary niche">
-                    <select
-                      disabled={loading}
-                      value={form.niche}
-                      onChange={(e) => setForm({ ...form, niche: e.target.value })}
-                      className="input appearance-none cursor-pointer disabled:opacity-50"
-                    >
-                      {NICHES.map((n) => <option key={n} value={n} className="bg-card text-foreground">{n}</option>)}
-                    </select>
-                  </Field>
-                  <div className="block">
-                    <span className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.2em] text-foreground/75">Creator Photo</span>
-                    <div
-                      className={`relative flex flex-col items-center justify-center border border-dashed rounded-xl p-6 transition-all cursor-pointer ${photoPreview
-                          ? "border-accent/40 bg-white/60 backdrop-blur-[4px]"
-                          : "border-border/80 hover:border-accent/60 bg-white/40 hover:bg-white/60 backdrop-blur-[4px]"
-                        }`}
-                      onDragOver={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                      }}
-                      onDrop={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        if (loading) return;
-                        const files = e.dataTransfer.files;
-                        if (files && files[0]) {
-                          handlePhotoSelect(files[0]);
-                        }
-                      }}
-                      onClick={() => {
-                        if (!loading && !photoPreview) {
-                          document.getElementById("photo-upload-input")?.click();
-                        }
-                      }}
-                    >
-                      <input
-                        id="photo-upload-input"
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        disabled={loading}
-                        onChange={(e) => {
-                          const files = e.target.files;
-                          if (files && files[0]) {
-                            handlePhotoSelect(files[0]);
-                          }
-                        }}
-                      />
-
-                      {photoPreview ? (
-                        <div className="flex items-center gap-4 w-full">
-                          <div className="relative h-16 w-16 rounded-full overflow-hidden border border-border bg-muted shrink-0">
-                            <img
-                              src={photoPreview}
-                              alt="Preview"
-                              className="h-full w-full object-cover"
-                            />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-foreground truncate">
-                              {photoFile?.name}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              {(photoFile?.size ? photoFile.size / (1024 * 1024) : 0).toFixed(2)} MB
-                            </p>
-                          </div>
-                          <button
-                            type="button"
-                            disabled={loading}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setPhotoFile(null);
-                              setPhotoPreview(null);
-                            }}
-                            className="p-2 rounded-lg bg-foreground/[0.03] hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors disabled:opacity-50"
-                          >
-                            <X className="h-4 w-4" />
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="text-center py-2 w-full">
-                          <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-foreground/[0.03] text-muted-foreground mb-3">
-                            <Upload className="h-5 w-5 text-muted-foreground" />
-                          </div>
-                          <p className="text-xs font-medium text-foreground">
-                            Click or drag photo here
-                          </p>
-                          <p className="text-[10px] text-muted-foreground mt-1">
-                            PNG, JPG or WEBP up to 5MB
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  <motion.button
-                    type="submit"
-                    disabled={loading}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="group relative overflow-hidden flex w-full items-center justify-center gap-2 rounded-xl bg-foreground px-4 py-3.5 text-sm font-medium text-primary-foreground transition-colors hover:text-indigo-300 disabled:bg-foreground/60 mt-2"
-                  >
-                    <div className="relative z-10 flex items-center gap-2">
-                      {loading ? (
-                        <>
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                          Securing spot...
-                        </>
-                      ) : (
-                        <>
-                          Register for Summit
-                          <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-                        </>
-                      )}
-                    </div>
-                  </motion.button>
-                </form>
-              </div>
             ) : (
               <motion.div
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+                transition={{ duration: 0.8, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
                 whileHover={{ y: -4, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } }}
                 className="relative bg-white border border-black/[0.04] rounded-3xl p-10 sm:p-12 shadow-[0_20px_50px_rgba(0,0,0,0.02),0_1px_2px_rgba(0,0,0,0.01)] hover:shadow-[0_30px_70px_rgba(0,0,0,0.04),0_1px_3px_rgba(0,0,0,0.015)] transition-shadow duration-500 w-full text-center flex flex-col items-center justify-center"
               >
@@ -817,18 +505,33 @@ function Index() {
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#7C3AED]/40 opacity-75"></span>
                     <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#7C3AED]"></span>
                   </span>
-                  Status Update
+                  Applications Closed
                 </div>
 
                 {/* Heading */}
                 <h3 className="font-display text-4xl sm:text-[2.5rem] font-normal leading-[1.1] tracking-tight text-foreground mb-4">
-                  Applications Closed
+                  Creator Applications Closed
                 </h3>
 
                 {/* Description */}
                 <p className="text-sm sm:text-[14px] leading-relaxed text-muted-foreground/95 max-w-sm px-2 mb-6">
-                  Thank you for the overwhelming response. Creator applications are currently closed while our team reviews all submissions. Selected applicants will receive further communication shortly.
+                  Thank you for the overwhelming response. Creator applications are currently closed. Click below to request consideration via WhatsApp.
                 </p>
+
+                {/* CTA WhatsApp Button */}
+                <motion.a
+                  href="https://wa.me/919187127114?text=Hi,%20I'm%20interested%20in%20joining%20the%20Creator%20Summit%202026."
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="group relative overflow-hidden flex w-full items-center justify-center gap-2 rounded-xl bg-foreground px-4 py-3.5 text-sm font-medium text-primary-foreground transition-colors hover:text-indigo-300 w-full max-w-sm mt-4 mb-6"
+                >
+                  <div className="relative z-10 flex items-center gap-2">
+                    Request Consideration
+                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+                  </div>
+                </motion.a>
 
                 {/* Footer */}
                 <div className="mt-4 pt-6 border-t border-black/[0.04] w-full flex items-center justify-center gap-3 text-[9px] font-bold tracking-[0.3em] text-muted-foreground/60 uppercase">
