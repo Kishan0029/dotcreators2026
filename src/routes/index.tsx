@@ -472,7 +472,7 @@ function Index() {
 
                 {/* Description */}
                 <p className="text-sm sm:text-[14px] leading-relaxed text-muted-foreground/95 max-w-sm px-2 mb-6">
-                  Thank you for the overwhelming response to DOT Creator Summit 2026.
+                  Thank you for the overwhelming response to Pai Creator Summit 2026.
                   <br /><br />
                   Creator applications are now officially closed. If you believe your profile would be a valuable addition to the summit, you may submit your details below for consideration. Our team will carefully review every request, and if an opportunity becomes available, we will contact you via email.
                 </p>
