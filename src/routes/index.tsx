@@ -617,17 +617,17 @@ function Index() {
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#7C3AED]/40 opacity-75"></span>
                     <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#7C3AED]"></span>
                   </span>
-                  Applications Closed
+                  Registrations Closed
                 </div>
 
                 {/* Heading */}
                 <h3 className="font-display text-4xl sm:text-[2.5rem] font-normal leading-[1.1] tracking-tight text-foreground mb-4">
-                  Creator Applications Closed
+                  Registrations Closed
                 </h3>
 
                 {/* Description */}
                 <p className="text-sm sm:text-[14px] leading-relaxed text-muted-foreground/95 max-w-sm px-2 mb-6">
-                  Thank you for the overwhelming response. Applications are now closed. If you'd
+                  Thank you for the overwhelming response. Registrations are now closed. If you'd
                   still like to be considered, request consideration via WhatsApp.
                 </p>
 
@@ -690,18 +690,18 @@ function Index() {
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#7C3AED]/40 opacity-75"></span>
                     <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#7C3AED]"></span>
                   </span>
-                  Applications Closed
+                  Registrations Closed
                 </div>
 
                 {/* Heading */}
                 <h3 className="font-display text-4xl sm:text-[2.5rem] font-normal leading-[1.1] tracking-tight text-foreground mb-4">
-                  Creator Applications Closed
+                  Registrations Closed
                 </h3>
 
                 {/* Description */}
                 <p className="text-sm sm:text-[14px] leading-relaxed text-muted-foreground/95 max-w-sm px-2 mb-6">
-                  Thank you for the overwhelming response. Creator applications are currently
-                  closed. Click below to request consideration via WhatsApp.
+                  Thank you for the overwhelming response. Registrations are currently closed. Click
+                  below to request consideration via WhatsApp.
                 </p>
 
                 {/* CTA WhatsApp Button */}
