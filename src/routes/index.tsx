@@ -83,7 +83,8 @@ const fireConfetti = () => {
 
   // Creator Emoji explosion
   setTimeout(() => {
-    (confetti as any)({
+    const customConfetti = confetti as unknown as (options: unknown) => void;
+    customConfetti({
       particleCount: 35,
       spread: 60,
       origin: { y: 0.55 },
@@ -345,10 +346,11 @@ function Index() {
 
       setPhotoSubmitSuccess(true);
       fireConfetti();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error submitting photo:", error);
+      const err = error as Error;
       showAlert(
-        `Oops! Something went wrong: ${error.message || "Please try again."}`,
+        `Oops! Something went wrong: ${err.message || "Please try again."}`,
         "Submission Error",
         "error",
       );
@@ -423,10 +425,11 @@ function Index() {
       }
 
       setSubmitted(true);
-    } catch (error: any) {
-      console.error("Error submitting registration:", error.message);
+    } catch (error: unknown) {
+      console.error("Error submitting registration:", error);
+      const err = error as Error;
       showAlert(
-        `Oops! Something went wrong: ${error.message || "Please try again."}`,
+        `Oops! Something went wrong: ${err.message || "Please try again."}`,
         "Registration Error",
         "error",
       );
@@ -491,10 +494,11 @@ function Index() {
 
       setWaitlistSubmitted(true);
       fireConfetti();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error submitting waitlist registration:", error);
+      const err = error as Error;
       showAlert(
-        `Oops! Something went wrong: ${error.message || "Please try again."}`,
+        `Oops! Something went wrong: ${err.message || "Please try again."}`,
         "Waitlist Error",
         "error",
       );

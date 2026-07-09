@@ -50,8 +50,9 @@ export const Route = createFileRoute("/send-thank-you")({
             status: 200,
             headers: { "Content-Type": "application/json" },
           });
-        } catch (error: any) {
-          return new Response(JSON.stringify({ error: error.message }), {
+        } catch (error: unknown) {
+          const err = error as Error;
+          return new Response(JSON.stringify({ error: err.message }), {
             status: 500,
             headers: { "Content-Type": "application/json" },
           });
