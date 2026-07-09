@@ -125,6 +125,9 @@ function Index() {
   const [isClient, setIsClient] = useState(false);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [waitlistEmail, setWaitlistEmail] = useState("");
+  const [waitlistSubmitted, setWaitlistSubmitted] = useState(false);
+  const [waitlistLoading, setWaitlistLoading] = useState(false);
 
 
   // Set client flag on mount to defeat server minification errors safely
@@ -231,6 +234,54 @@ function Index() {
       alert(`Oops! Something went wrong: ${error.message || "Please try again."}`);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function submitWaitlist(e: React.FormEvent) {
+    e.preventDefault();
+    if (!waitlistEmail.trim()) return;
+
+    setWaitlistLoading(true);
+    try {
+      const isPlaceholder = !import.meta.env.VITE_SUPABASE_URL || import.meta.env.VITE_SUPABASE_URL.includes("placeholder.supabase.co");
+
+      if (isPlaceholder) {
+        await new Promise((resolve) => setTimeout(resolve, 1200));
+        console.log("Demo Mode: Simulated successful waitlist signup:", waitlistEmail.trim());
+        setWaitlistSubmitted(true);
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from("waitlist")
+          .insert([{ email: waitlistEmail.trim() }]);
+        
+        if (error) throw error;
+      } catch (waitlistError: any) {
+        console.warn("Waitlist table insert failed, falling back to registrations table:", waitlistError.message);
+        
+        const { data, error } = await supabase
+          .from("registrations")
+          .insert([
+            {
+              full_name: "Waitlist Entry",
+              email: waitlistEmail.trim(),
+              social_handle: "waitlist",
+              niche: "Other",
+              photo_url: null,
+            }
+          ]);
+
+        if (error) throw error;
+      }
+
+      setWaitlistSubmitted(true);
+    } catch (error: any) {
+      console.error("Error submitting waitlist:", error.message);
+      alert(`Oops! Something went wrong: ${error.message || "Please try again."}`);
+    } finally {
+      setWaitlistLoading(false);
     }
   }
 
@@ -356,20 +407,63 @@ function Index() {
                   Thank you for the overwhelming response. Creator applications are currently closed while our team reviews all submissions. Selected applicants will receive further communication shortly.
                 </p>
 
-                {/* WhatsApp Button */}
-                <motion.a
-                  href="https://wa.me/919187127114?text=Hi,%20I'm%20interested%20in%20joining%20the%20Creator%20Summit%202026."
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  whileHover={{ scale: 1.02, translateY: -1 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="mt-2 inline-flex items-center justify-center gap-2.5 rounded-xl border border-black/[0.08] hover:border-black/20 bg-white hover:bg-black/[0.01] px-5 py-3 text-xs font-semibold text-foreground shadow-[0_2px_8px_rgba(0,0,0,0.02)] transition-all duration-300 mb-6 w-full max-w-[240px]"
-                >
-                  <svg viewBox="0 0 24 24" className="h-4 w-4 text-[#25D366] fill-current" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12.012 2c-5.506 0-9.989 4.478-9.99 9.984a9.96 9.96 0 001.37 5.016L2 22l5.13-1.346a9.93 9.93 0 004.881 1.343h.005c5.505 0 9.99-4.478 9.99-9.985C22.007 6.476 17.519 2 12.012 2zm0 18.29h-.003a8.25 8.25 0 01-4.215-1.161l-.302-.18-3.13.82.836-3.048-.198-.314a8.27 8.27 0 01-1.267-4.42c.002-4.547 3.702-8.241 8.253-8.241 4.544 0 8.243 3.693 8.245 8.242-.002 4.549-3.7 8.243-8.253 8.243zm4.52-6.162c-.247-.124-1.464-.722-1.692-.805-.227-.083-.393-.124-.559.124-.166.248-.64.805-.785.969-.145.165-.29.185-.538.062a7.65 7.65 0 01-1.996-1.23 8.41 8.41 0 01-1.38-1.716c-.246-.414-.026-.638.18-.843.187-.184.413-.476.62-.714.062-.072.124-.145.18-.217.186-.31.093-.58-.047-.858-.14-.278-.559-1.343-.765-1.838-.2-.486-.4-.423-.559-.431l-.476-.008c-.165 0-.434.062-.661.31-.228.248-.868.847-.868 2.066 0 1.22.888 2.397 1.012 2.562.124.165 1.748 2.67 4.235 3.74.59.255 1.053.408 1.411.521.593.188 1.133.162 1.559.098.475-.072 1.464-.599 1.67-.178.208.423.208.785.104.91-.104.124-.559.722-.806.846z" />
-                  </svg>
-                  Reach out on WhatsApp
-                </motion.a>
+                {/* Waitlist Form */}
+                {!waitlistSubmitted ? (
+                  <form onSubmit={submitWaitlist} className="w-full max-w-sm mt-2 mb-6">
+                    <div className="flex flex-col sm:flex-row gap-2.5">
+                      <input
+                        type="email"
+                        required
+                        disabled={waitlistLoading}
+                        value={waitlistEmail}
+                        onChange={(e) => setWaitlistEmail(e.target.value)}
+                        className="w-full rounded-xl border border-black/[0.08] bg-foreground/[0.02] hover:bg-foreground/[0.04] px-4 py-3 text-sm text-foreground focus:outline-none focus:border-[#7C3AED] focus:ring-2 focus:ring-[#7C3AED]/20 transition-all placeholder:text-muted-foreground/60"
+                        placeholder="Enter your email address"
+                      />
+                      <motion.button
+                        type="submit"
+                        disabled={waitlistLoading}
+                        whileHover={{ scale: 1.01 }}
+                        whileTap={{ scale: 0.99 }}
+                        className="shrink-0 rounded-xl bg-foreground hover:bg-black/90 text-primary-foreground hover:text-[#c084fc] font-semibold text-xs px-5 py-3 transition-colors flex items-center justify-center gap-1.5"
+                      >
+                        {waitlistLoading ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          "Join Waitlist"
+                        )}
+                      </motion.button>
+                    </div>
+                  </form>
+                ) : (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="w-full max-w-sm py-4 px-3 bg-purple-500/5 border border-purple-500/10 rounded-xl text-center mb-6 text-xs text-purple-700 font-medium"
+                  >
+                    ✨ You have been added to our waitlist. We will notify you when applications open.
+                  </motion.div>
+                )}
+
+                {/* Queries Call-to-action */}
+                <div className="w-full flex flex-col items-center border-t border-black/[0.04] pt-6 mb-2">
+                  <span className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground/75 mb-3">
+                    Have queries?
+                  </span>
+                  <motion.a
+                    href="https://wa.me/919187127114?text=Hi,%20I'm%20interested%20in%20joining%20the%20Creator%20Summit%202026."
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    whileHover={{ scale: 1.02, translateY: -1 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="inline-flex items-center justify-center gap-2.5 rounded-xl border border-black/[0.08] hover:border-black/20 bg-white hover:bg-black/[0.01] px-5 py-3 text-xs font-semibold text-foreground shadow-[0_2px_8px_rgba(0,0,0,0.02)] transition-all duration-300 w-full max-w-[240px]"
+                  >
+                    <svg viewBox="0 0 24 24" className="h-4 w-4 text-[#25D366] fill-current" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M12.012 2c-5.506 0-9.989 4.478-9.99 9.984a9.96 9.96 0 001.37 5.016L2 22l5.13-1.346a9.93 9.93 0 004.881 1.343h.005c5.505 0 9.99-4.478 9.99-9.985C22.007 6.476 17.519 2 12.012 2zm0 18.29h-.003a8.25 8.25 0 01-4.215-1.161l-.302-.18-3.13.82.836-3.048-.198-.314a8.27 8.27 0 01-1.267-4.42c.002-4.547 3.702-8.241 8.253-8.241 4.544 0 8.243 3.693 8.245 8.242-.002 4.549-3.7 8.243-8.253 8.243zm4.52-6.162c-.247-.124-1.464-.722-1.692-.805-.227-.083-.393-.124-.559.124-.166.248-.64.805-.785.969-.145.165-.29.185-.538.062a7.65 7.65 0 01-1.996-1.23 8.41 8.41 0 01-1.38-1.716c-.246-.414-.026-.638.18-.843.187-.184.413-.476.62-.714.062-.072.124-.145.18-.217.186-.31.093-.58-.047-.858-.14-.278-.559-1.343-.765-1.838-.2-.486-.4-.423-.559-.431l-.476-.008c-.165 0-.434.062-.661.31-.228.248-.868.847-.868 2.066 0 1.22.888 2.397 1.012 2.562.124.165 1.748 2.67 4.235 3.74.59.255 1.053.408 1.411.521.593.188 1.133.162 1.559.098.475-.072 1.464-.599 1.67-.178.208.423.208.785.104.91-.104.124-.559.722-.806.846z" />
+                    </svg>
+                    Reach out on WhatsApp
+                  </motion.a>
+                </div>
 
                 {/* Footer */}
                 <div className="mt-4 pt-6 border-t border-black/[0.04] w-full flex items-center justify-center gap-3 text-[9px] font-bold tracking-[0.3em] text-muted-foreground/60 uppercase">
