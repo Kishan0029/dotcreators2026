@@ -16,29 +16,48 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Creator Summit 2026 — You're Invited" },
-      { name: "description", content: "An invitation-only gathering of India's leading content creators at Pai Convention Hall, Belagavi." },
+      {
+        name: "description",
+        content:
+          "An invitation-only gathering of India's leading content creators at Pai Convention Hall, Belagavi.",
+      },
       { property: "og:title", content: "Creator Summit 2026 — You're Invited" },
-      { property: "og:description", content: "Connect • Collaborate • Grow. Hosted by Dot Entertainments at Pai Convention Hall." },
+      {
+        property: "og:description",
+        content:
+          "Connect • Collaborate • Grow. Hosted by Dot Entertainments at Pai Convention Hall.",
+      },
     ],
   }),
   component: Index,
 });
 
-const NICHES = ["Video", "Tech", "Fashion / Lifestyle", "Photography", "Business / Founders", "Other"];
+const NICHES = [
+  "Video",
+  "Tech",
+  "Fashion / Lifestyle",
+  "Photography",
+  "Business / Founders",
+  "Other",
+];
 
 function DotLogo({ className = "h-14 w-14" }: { className?: string }) {
   return (
     <div className="flex items-center justify-center">
-      <img
-        src={dotLogo}
-        alt="Dot Entertainments"
-        className={`object-contain ${className}`}
-      />
+      <img src={dotLogo} alt="Dot Entertainments" className={`object-contain ${className}`} />
     </div>
   );
 }
 
-function FadeIn({ children, delay = 0, y = 24 }: { children: React.ReactNode; delay?: number; y?: number }) {
+function FadeIn({
+  children,
+  delay = 0,
+  y = 24,
+}: {
+  children: React.ReactNode;
+  delay?: number;
+  y?: number;
+}) {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-80px" });
   return (
@@ -59,7 +78,7 @@ const fireConfetti = () => {
     particleCount: 100,
     spread: 70,
     origin: { y: 0.6 },
-    colors: ['#8A2BE2', '#4B0082', '#9370DB', '#4169E1', '#00BFFF', '#6A0DAD', '#FFD700']
+    colors: ["#8A2BE2", "#4B0082", "#9370DB", "#4169E1", "#00BFFF", "#6A0DAD", "#FFD700"],
   });
 
   // Creator Emoji explosion
@@ -70,12 +89,12 @@ const fireConfetti = () => {
       origin: { y: 0.55 },
       flat: true,
       scalar: 2.2,
-      shapes: ['emoji'],
+      shapes: ["emoji"],
       shapeOptions: {
         emoji: {
-          value: ['🎥', '📸', '🌟', '👑', '🎉', '✨', '🎬', '💡', '🚀', '🎨']
-        }
-      }
+          value: ["🎥", "📸", "🌟", "👑", "🎉", "✨", "🎬", "💡", "🚀", "🎨"],
+        },
+      },
     });
   }, 150);
 
@@ -86,7 +105,7 @@ const fireConfetti = () => {
       angle: 60,
       spread: 55,
       origin: { x: 0, y: 0.85 },
-      colors: ['#8A2BE2', '#4B0082', '#9370DB', '#4169E1', '#00BFFF']
+      colors: ["#8A2BE2", "#4B0082", "#9370DB", "#4169E1", "#00BFFF"],
     });
   }, 300);
 
@@ -97,7 +116,7 @@ const fireConfetti = () => {
       angle: 120,
       spread: 55,
       origin: { x: 1, y: 0.85 },
-      colors: ['#8A2BE2', '#4B0082', '#9370DB', '#4169E1', '#00BFFF']
+      colors: ["#8A2BE2", "#4B0082", "#9370DB", "#4169E1", "#00BFFF"],
     });
   }, 500);
 
@@ -108,7 +127,7 @@ const fireConfetti = () => {
       decay: 0.91,
       scalar: 0.8,
       origin: { y: 0.35 },
-      colors: ['#8A2BE2', '#9370DB', '#FFD700']
+      colors: ["#8A2BE2", "#9370DB", "#FFD700"],
     });
   }, 750);
 };
@@ -134,6 +153,11 @@ function Index() {
   const [waitlistSubmitted, setWaitlistSubmitted] = useState(false);
   const [waitlistLoading, setWaitlistLoading] = useState(false);
 
+  const [verifyName, setVerifyName] = useState("");
+  const [photoSubmitFile, setPhotoSubmitFile] = useState<File | null>(null);
+  const [photoSubmitPreview, setPhotoSubmitPreview] = useState<string | null>(null);
+  const [submittingPhoto, setSubmittingPhoto] = useState(false);
+  const [photoSubmitSuccess, setPhotoSubmitSuccess] = useState(false);
 
   // Set client flag on mount to defeat server minification errors safely
   useEffect(() => {
@@ -146,8 +170,8 @@ function Index() {
       setLoaderComplete(true);
     };
 
-    window.addEventListener('loader-complete', handleLoaderComplete);
-    return () => window.removeEventListener('loader-complete', handleLoaderComplete);
+    window.addEventListener("loader-complete", handleLoaderComplete);
+    return () => window.removeEventListener("loader-complete", handleLoaderComplete);
   }, []);
 
   function handlePhotoSelect(file: File) {
@@ -186,6 +210,120 @@ function Index() {
     reader.readAsDataURL(file);
   }
 
+  function handlePhotoSubmitSelect(file: File) {
+    if (!file.type.startsWith("image/")) {
+      alert("Please upload an image file.");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      alert("Photo must be smaller than 5MB.");
+      return;
+    }
+    setPhotoSubmitFile(file);
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPhotoSubmitPreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  }
+
+  async function handleVerifyAndSubmitPhoto(e: React.FormEvent) {
+    e.preventDefault();
+    if (!verifyName.trim()) {
+      alert("Please enter your name.");
+      return;
+    }
+    if (!photoSubmitFile) {
+      alert("Please select a photo to upload.");
+      return;
+    }
+
+    setSubmittingPhoto(true);
+    try {
+      const isPlaceholder =
+        !import.meta.env.VITE_SUPABASE_URL ||
+        import.meta.env.VITE_SUPABASE_URL.includes("placeholder.supabase.co");
+
+      let foundCreator = null;
+
+      if (!isPlaceholder) {
+        // Query registrations table to check if a creator with this name exists
+        const { data, error } = await supabase
+          .from("registrations")
+          .select("id, full_name")
+          .ilike("full_name", verifyName.trim());
+
+        if (error) throw error;
+
+        if (!data || data.length === 0) {
+          alert(
+            `We couldn't find a registration for "${verifyName}". Please verify your name or contact support.`,
+          );
+          setSubmittingPhoto(false);
+          return;
+        }
+
+        foundCreator = data[0];
+      } else {
+        // Mock check for demo mode
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        if (verifyName.toLowerCase() === "notfound") {
+          alert(
+            `We couldn't find a registration for "${verifyName}". Please verify your name or contact support.`,
+          );
+          setSubmittingPhoto(false);
+          return;
+        }
+        foundCreator = { id: "mock-id", full_name: verifyName };
+      }
+
+      // Upload the photo
+      let photoUrl = "";
+      if (!isPlaceholder) {
+        const fileExt = photoSubmitFile.name.split(".").pop();
+        const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
+        const filePath = `${fileName}`;
+
+        // Upload photo to Supabase Storage in 'registrations' bucket
+        const { error: uploadError } = await supabase.storage
+          .from("registrations")
+          .upload(filePath, photoSubmitFile, {
+            cacheControl: "3600",
+            upsert: false,
+          });
+
+        if (uploadError) throw uploadError;
+
+        const {
+          data: { publicUrl },
+        } = supabase.storage.from("registrations").getPublicUrl(filePath);
+
+        photoUrl = publicUrl;
+
+        // Update the registration record with the photo_url
+        const { error: updateError } = await supabase
+          .from("registrations")
+          .update({ photo_url: photoUrl })
+          .eq("id", foundCreator.id);
+
+        if (updateError) throw updateError;
+      } else {
+        // Mock successful upload and update
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        photoUrl = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500";
+      }
+
+      setPhotoSubmitSuccess(true);
+      fireConfetti();
+    } catch (error: any) {
+      console.error("Error submitting photo:", error);
+      alert(`Oops! Something went wrong: ${error.message || "Please try again."}`);
+    } finally {
+      setSubmittingPhoto(false);
+    }
+  }
+
   // Modified to handle async backend insert
   async function submitRegistration(e: React.FormEvent) {
     e.preventDefault();
@@ -193,7 +331,9 @@ function Index() {
 
     setLoading(true);
     try {
-      const isPlaceholder = !import.meta.env.VITE_SUPABASE_URL || import.meta.env.VITE_SUPABASE_URL.includes("placeholder.supabase.co");
+      const isPlaceholder =
+        !import.meta.env.VITE_SUPABASE_URL ||
+        import.meta.env.VITE_SUPABASE_URL.includes("placeholder.supabase.co");
 
       if (isPlaceholder) {
         // Simulated network delay
@@ -203,7 +343,7 @@ function Index() {
           email: email.trim(),
           social_handle: form.handle.trim(),
           niche: form.niche,
-          photo_name: photoFile ? photoFile.name : null
+          photo_name: photoFile ? photoFile.name : null,
         });
         setSubmitted(true);
         return;
@@ -211,7 +351,7 @@ function Index() {
 
       let photoUrl = "";
       if (photoFile) {
-        const fileExt = photoFile.name.split('.').pop();
+        const fileExt = photoFile.name.split(".").pop();
         const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
         const filePath = `${fileName}`;
 
@@ -220,7 +360,7 @@ function Index() {
           .from("registrations")
           .upload(filePath, photoFile, {
             cacheControl: "3600",
-            upsert: false
+            upsert: false,
           });
 
         if (uploadError) {
@@ -228,24 +368,22 @@ function Index() {
         }
 
         // Get the public URL for the uploaded photo
-        const { data: { publicUrl } } = supabase.storage
-          .from("registrations")
-          .getPublicUrl(filePath);
+        const {
+          data: { publicUrl },
+        } = supabase.storage.from("registrations").getPublicUrl(filePath);
 
         photoUrl = publicUrl;
       }
 
-      const { data, error } = await supabase
-        .from("registrations")
-        .insert([
-          {
-            full_name: form.name.trim(),
-            email: email.trim(),
-            social_handle: form.handle.trim(),
-            niche: form.niche,
-            photo_url: photoUrl || null,
-          }
-        ]);
+      const { data, error } = await supabase.from("registrations").insert([
+        {
+          full_name: form.name.trim(),
+          email: email.trim(),
+          social_handle: form.handle.trim(),
+          niche: form.niche,
+          photo_url: photoUrl || null,
+        },
+      ]);
 
       if (error) {
         throw error;
@@ -270,12 +408,14 @@ function Index() {
 
     setWaitlistLoading(true);
     try {
-      const isPlaceholder = !import.meta.env.VITE_SUPABASE_URL || import.meta.env.VITE_SUPABASE_URL.includes("placeholder.supabase.co");
-      
+      const isPlaceholder =
+        !import.meta.env.VITE_SUPABASE_URL ||
+        import.meta.env.VITE_SUPABASE_URL.includes("placeholder.supabase.co");
+
       let photoUrl = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500";
 
       if (!isPlaceholder && waitlistPhotoFile) {
-        const fileExt = waitlistPhotoFile.name.split('.').pop();
+        const fileExt = waitlistPhotoFile.name.split(".").pop();
         const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
         const filePath = `${fileName}`;
 
@@ -284,31 +424,29 @@ function Index() {
           .from("registrations")
           .upload(filePath, waitlistPhotoFile, {
             cacheControl: "3600",
-            upsert: false
+            upsert: false,
           });
 
         if (uploadError) throw uploadError;
 
-        const { data: { publicUrl } } = supabase.storage
-          .from("registrations")
-          .getPublicUrl(filePath);
+        const {
+          data: { publicUrl },
+        } = supabase.storage.from("registrations").getPublicUrl(filePath);
 
         photoUrl = publicUrl;
       }
 
       // Sync to Supabase synchronously
       if (!isPlaceholder) {
-        const { error } = await supabase
-          .from("registrations")
-          .insert([
-            {
-              full_name: waitlistName.trim(),
-              email: "",
-              social_handle: waitlistHandle.trim(),
-              niche: "Other",
-              photo_url: photoUrl,
-            }
-          ]);
+        const { error } = await supabase.from("registrations").insert([
+          {
+            full_name: waitlistName.trim(),
+            email: "",
+            social_handle: waitlistHandle.trim(),
+            niche: "Other",
+            photo_url: photoUrl,
+          },
+        ]);
         if (error) throw error;
       } else {
         await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -337,8 +475,6 @@ function Index() {
     <main className="relative min-h-screen w-full flex flex-col items-center bg-background text-foreground overflow-x-hidden">
       <LiquidBackground />
 
-
-
       {/* Ambient aura */}
       <div className="pointer-events-none fixed inset-0 -z-10">
         <div className="absolute left-1/2 top-[18%] h-[700px] w-[700px] -translate-x-1/2 rounded-full bg-[radial-gradient(circle_at_center,_var(--color-aura-1),_transparent_60%)] blur-3xl" />
@@ -365,7 +501,7 @@ function Index() {
               src={summitLogo}
               alt="Dot Creator Summit"
               className="h-20 sm:h-28 w-auto object-contain mix-blend-multiply brightness-0"
-              style={{ filter: 'brightness(0)' }}
+              style={{ filter: "brightness(0)" }}
             />
           </div>
           <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-border bg-foreground/[0.03] px-3.5 py-1 text-[11px] uppercase tracking-[0.22em] text-muted-foreground">
@@ -375,13 +511,16 @@ function Index() {
         </FadeIn>
         <FadeIn delay={0.05}>
           <h1 className="font-display text-[clamp(3rem,9vw,6.5rem)] leading-[0.95] tracking-tight text-balance">
-            You're <em className="italic text-transparent bg-clip-text bg-gradient-to-br from-[oklch(0.2_0.05_285)] via-[oklch(0.55_0.22_285)] to-[oklch(0.7_0.18_285)]">Invited.</em>
+            You're{" "}
+            <em className="italic text-transparent bg-clip-text bg-gradient-to-br from-[oklch(0.2_0.05_285)] via-[oklch(0.55_0.22_285)] to-[oklch(0.7_0.18_285)]">
+              Invited.
+            </em>
           </h1>
         </FadeIn>
         <FadeIn delay={0.15}>
           <p className="mt-7 max-w-xl text-[15px] leading-relaxed text-muted-foreground sm:text-base">
-            Connect with leading creators and visionary founders, discover new opportunities,
-            and build relationships that drive innovation.
+            Connect with leading creators and visionary founders, discover new opportunities, and
+            build relationships that drive innovation.
           </p>
         </FadeIn>
         <FadeIn delay={0.2}>
@@ -406,6 +545,146 @@ function Index() {
                 whileHover={{ y: -4, transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] } }}
                 className="relative bg-white border border-black/[0.04] rounded-3xl p-10 sm:p-12 shadow-[0_20px_50px_rgba(0,0,0,0.02),0_1px_2px_rgba(0,0,0,0.01)] hover:shadow-[0_30px_70px_rgba(0,0,0,0.04),0_1px_3px_rgba(0,0,0,0.015)] transition-shadow duration-500 w-full text-center flex flex-col items-center justify-center"
               >
+                {/* Photo Upload / Verification Section */}
+                <div className="w-full mb-8 pb-8 border-b border-black/[0.04] text-left">
+                  <h4 className="text-xs font-semibold uppercase tracking-[0.2em] text-foreground/80 mb-3 text-center">
+                    Submit Creator Photo
+                  </h4>
+                  {photoSubmitSuccess ? (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="py-3 px-4 bg-emerald-50 border border-emerald-100 rounded-xl text-center text-xs text-emerald-700 font-medium"
+                    >
+                      ✨ Photo submitted successfully! Your registration record has been updated.
+                    </motion.div>
+                  ) : (
+                    <form onSubmit={handleVerifyAndSubmitPhoto} className="space-y-4">
+                      <Field label="Your Full Name">
+                        <input
+                          required
+                          disabled={submittingPhoto}
+                          value={verifyName}
+                          onChange={(e) => setVerifyName(e.target.value)}
+                          className="input"
+                          placeholder="Enter your registered full name"
+                        />
+                      </Field>
+
+                      <div className="block">
+                        <span className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.2em] text-foreground/75">
+                          Upload Photo
+                        </span>
+                        <div
+                          className={`relative flex flex-col items-center justify-center border border-dashed rounded-xl p-5 transition-all cursor-pointer ${
+                            photoSubmitPreview
+                              ? "border-accent/40 bg-white/60 backdrop-blur-[4px]"
+                              : "border-border/80 hover:border-accent/60 bg-white/40 hover:bg-white/60 backdrop-blur-[4px]"
+                          }`}
+                          onDragOver={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                          }}
+                          onDrop={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            if (submittingPhoto) return;
+                            const files = e.dataTransfer.files;
+                            if (files && files[0]) {
+                              handlePhotoSubmitSelect(files[0]);
+                            }
+                          }}
+                          onClick={() => {
+                            if (!submittingPhoto && !photoSubmitPreview) {
+                              document.getElementById("photo-submit-upload-input")?.click();
+                            }
+                          }}
+                        >
+                          <input
+                            id="photo-submit-upload-input"
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            disabled={submittingPhoto}
+                            onChange={(e) => {
+                              const files = e.target.files;
+                              if (files && files[0]) {
+                                handlePhotoSubmitSelect(files[0]);
+                              }
+                            }}
+                          />
+
+                          {photoSubmitPreview ? (
+                            <div className="flex items-center gap-3 w-full">
+                              <div className="relative h-12 w-12 rounded-full overflow-hidden border border-border bg-muted shrink-0">
+                                <img
+                                  src={photoSubmitPreview}
+                                  alt="Preview"
+                                  className="h-full w-full object-cover"
+                                />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs font-medium text-foreground truncate">
+                                  {photoSubmitFile?.name}
+                                </p>
+                                <p className="text-[10px] text-muted-foreground">
+                                  {(photoSubmitFile?.size
+                                    ? photoSubmitFile.size / (1024 * 1024)
+                                    : 0
+                                  ).toFixed(2)}{" "}
+                                  MB
+                                </p>
+                              </div>
+                              <button
+                                type="button"
+                                disabled={submittingPhoto}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setPhotoSubmitFile(null);
+                                  setPhotoSubmitPreview(null);
+                                }}
+                                className="p-1.5 rounded-lg bg-foreground/[0.03] hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
+                              >
+                                <X className="h-3.5 w-3.5" />
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="text-center py-1 w-full">
+                              <Upload className="h-4 w-4 text-muted-foreground mx-auto mb-2" />
+                              <p className="text-[11px] font-medium text-foreground">
+                                Upload profile photo
+                              </p>
+                              <p className="text-[9px] text-muted-foreground mt-0.5">
+                                PNG, JPG or WEBP • Max 5MB
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <motion.button
+                        type="submit"
+                        disabled={submittingPhoto}
+                        whileHover={{ scale: 1.01 }}
+                        whileTap={{ scale: 0.99 }}
+                        className="group relative overflow-hidden flex w-full items-center justify-center gap-2 rounded-xl bg-foreground px-4 py-3 text-xs font-semibold text-primary-foreground transition-colors hover:text-indigo-300 disabled:bg-foreground/60"
+                      >
+                        {submittingPhoto ? (
+                          <>
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            Verifying & Submitting...
+                          </>
+                        ) : (
+                          <>
+                            Verify & Submit Photo
+                            <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+                          </>
+                        )}
+                      </motion.button>
+                    </form>
+                  )}
+                </div>
+
                 {/* Refined Premium Status Icon */}
                 <div className="relative flex items-center justify-center w-14 h-14 mb-6">
                   {/* Pulsing Outer Glow Ring */}
@@ -443,7 +722,8 @@ function Index() {
 
                 {/* Description */}
                 <p className="text-sm sm:text-[14px] leading-relaxed text-muted-foreground/95 max-w-sm px-2 mb-6">
-                  Thank you for the overwhelming response. Applications are now closed. If you'd still like to be considered, request consideration via WhatsApp.
+                  Thank you for the overwhelming response. Applications are now closed. If you'd
+                  still like to be considered, request consideration via WhatsApp.
                 </p>
 
                 {/* CTA WhatsApp Button */}
@@ -515,7 +795,8 @@ function Index() {
 
                 {/* Description */}
                 <p className="text-sm sm:text-[14px] leading-relaxed text-muted-foreground/95 max-w-sm px-2 mb-6">
-                  Thank you for the overwhelming response. Creator applications are currently closed. Click below to request consideration via WhatsApp.
+                  Thank you for the overwhelming response. Creator applications are currently
+                  closed. Click below to request consideration via WhatsApp.
                 </p>
 
                 {/* CTA WhatsApp Button */}
@@ -549,29 +830,40 @@ function Index() {
 
       {/* Horizontal Experience Slider */}
 
-
-
-
       {/* Venue */}
       <section className="relative z-10 mx-auto w-full max-w-5xl px-6 py-24 sm:py-32">
         <FadeIn>
-          <div className="mb-3 text-[11px] uppercase tracking-[0.3em] text-muted-foreground">— The Venue</div>
+          <div className="mb-3 text-[11px] uppercase tracking-[0.3em] text-muted-foreground">
+            — The Venue
+          </div>
           <h2 className="font-display text-5xl leading-[1] tracking-tight sm:text-7xl">
-            A setting befitting<br />the gathering.
+            A setting befitting
+            <br />
+            the gathering.
           </h2>
         </FadeIn>
         <div className="mt-16 grid gap-10 md:grid-cols-[1fr_auto_1fr] md:items-center">
           <FadeIn delay={0.1}>
             <div className="text-right md:pr-2">
-              <div className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground">Presented by</div>
+              <div className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
+                Presented by
+              </div>
               <div className="mt-3 flex items-center justify-end">
-                <span className="mr-3 text-[13px] font-medium tracking-[0.2em] uppercase">Pai Convention Hall & Catering</span>
+                <span className="mr-3 text-[13px] font-medium tracking-[0.2em] uppercase">
+                  Pai Convention Hall & Catering
+                </span>
                 <div className="grid h-16 w-16 shrink-0 place-items-center rounded-full bg-white p-1 shadow-sm border border-border">
-                  <img src={paiLogo} alt="Pai Convention Hall & Catering" className="h-full w-full object-contain" />
+                  <img
+                    src={paiLogo}
+                    alt="Pai Convention Hall & Catering"
+                    className="h-full w-full object-contain"
+                  />
                 </div>
               </div>
               <p className="mt-4 text-sm text-muted-foreground leading-relaxed">
-                Pai Convention Hall,<br />Belagavi, Karnataka.
+                Pai Convention Hall,
+                <br />
+                Belagavi, Karnataka.
               </p>
             </div>
           </FadeIn>
@@ -581,22 +873,34 @@ function Index() {
 
           <FadeIn delay={0.2}>
             <div className="md:pl-2">
-              <div className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground">Co-organized by</div>
+              <div className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground">
+                Co-organized by
+              </div>
               <div className="mt-3 flex items-center gap-3">
                 <div className="grid h-16 w-16 shrink-0 place-items-center rounded-full bg-white p-1 shadow-sm border border-border">
-                  <img src={dotLogoPng} alt="Dot Entertainments" className="h-full w-full object-contain" />
+                  <img
+                    src={dotLogoPng}
+                    alt="Dot Entertainments"
+                    className="h-full w-full object-contain"
+                  />
                 </div>
-                <span className="text-[13px] font-medium tracking-[0.2em] uppercase">Dot Entertainments</span>
+                <span className="text-[13px] font-medium tracking-[0.2em] uppercase">
+                  Dot Entertainments
+                </span>
               </div>
               <p className="mt-4 text-sm text-muted-foreground leading-relaxed">
-                Curating premium experiences<br />for India's creator economy.
+                Curating premium experiences
+                <br />
+                for India's creator economy.
               </p>
             </div>
           </FadeIn>
         </div>
 
         <FadeIn delay={0.3}>
-          <div className="mt-24 mb-3 text-[11px] uppercase tracking-[0.3em] text-muted-foreground">— Location</div>
+          <div className="mt-24 mb-3 text-[11px] uppercase tracking-[0.3em] text-muted-foreground">
+            — Location
+          </div>
           <h4 className="font-display text-[clamp(2.25rem,4.5vw,3.5rem)] leading-tight tracking-tight">
             Got confused about the location?
           </h4>
@@ -613,9 +917,7 @@ function Index() {
             />
           </div>
           <div className="mt-6 text-center">
-            <h2 className="font-serif text-[clamp(2rem,10vw,5rem)] leading-tight tracking-tight font-bold text-foreground whitespace-nowrap">
-
-            </h2>
+            <h2 className="font-serif text-[clamp(2rem,10vw,5rem)] leading-tight tracking-tight font-bold text-foreground whitespace-nowrap"></h2>
           </div>
         </FadeIn>
       </section>
@@ -627,7 +929,15 @@ function Index() {
             © 2026 Dot Entertainments
           </div>
           <div className="text-[11px] uppercase tracking-[0.25em] text-muted-foreground">
-            Developed by <a href="https://dotlab.framer.website/" target="_blank" rel="noreferrer" className="underline hover:text-foreground">dotlab.in</a>
+            Developed by{" "}
+            <a
+              href="https://dotlab.framer.website/"
+              target="_blank"
+              rel="noreferrer"
+              className="underline hover:text-foreground"
+            >
+              dotlab.in
+            </a>
           </div>
         </div>
       </footer>
@@ -698,9 +1008,10 @@ function Index() {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.2em] text-foreground/75">{label}</span>
+      <span className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.2em] text-foreground/75">
+        {label}
+      </span>
       {children}
     </label>
   );
 }
-

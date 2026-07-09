@@ -13,7 +13,7 @@
 
 ## 🎯 Overview
 
-Welcome to **dotcreators-agency**! 
+Welcome to **dotcreators-agency**!
 Event website made in collaboration with Dotlabs Agency.
 
 This project was developed with a focus on modern web standards, performance, and responsive design.
@@ -47,12 +47,14 @@ Make sure you have [Node.js](https://nodejs.org/) and [npm](https://www.npmjs.co
 
 ## 👨‍💻 Developer
 
-**Kishan Revankar** 
+**Kishan Revankar**
+
 - [GitHub Profile](https://github.com/Kishan0029)
 - [Twitter/X](https://x.com/Kishan__29)
 - [LinkedIn](https://www.linkedin.com/in/kishanrevankar29/)
 
 ---
+
 <div align="center">
   <i>"Code is like humor. When you have to explain it, it’s bad." - Cory House</i>
 </div>

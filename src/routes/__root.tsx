@@ -39,7 +39,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     return (
       <QueryClientProvider client={queryClient}>
         {!isLoaded && <OBYSLoader onComplete={() => setIsLoaded(true)} />}
-        <div style={{ opacity: isLoaded ? 1 : 0, transition: 'opacity 0.8s ease' }}>
+        <div style={{ opacity: isLoaded ? 1 : 0, transition: "opacity 0.8s ease" }}>
           <Outlet />
         </div>
       </QueryClientProvider>

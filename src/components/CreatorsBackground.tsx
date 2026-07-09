@@ -8,7 +8,6 @@ import creator6 from "@/assets/creator 1 (6).png";
 export default function CreatorsBackground() {
   return (
     <div className="absolute inset-x-0 top-0 z-0 w-full h-[100vh] min-h-[750px] sm:min-h-[900px] pointer-events-none overflow-hidden select-none">
-      
       {/* Left Creators Group */}
       <div className="absolute left-0 bottom-0 h-full w-[45vw] max-w-[600px] flex items-end pointer-events-none">
         {/* Creator 1 (Far Left) */}
@@ -55,7 +54,7 @@ export default function CreatorsBackground() {
 
       {/* Ambient gradient fade to blend with page background */}
       <div className="absolute inset-x-0 bottom-0 h-[30vh] bg-gradient-to-t from-background via-background/40 to-transparent z-10 pointer-events-none" />
-      
+
       {/* Horizontal fade to ensure the center text remains fully readable on medium/narrow viewports */}
       <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 w-full max-w-xl bg-gradient-to-r from-transparent via-background/10 to-transparent opacity-50 z-10 pointer-events-none hidden max-md:block" />
     </div>

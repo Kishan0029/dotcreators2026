@@ -41,4 +41,3 @@ export function renderErrorPage(error?: unknown): string {
   </body>
 </html>`;
 }
-
