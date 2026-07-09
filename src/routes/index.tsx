@@ -262,28 +262,19 @@ function Index() {
 
   async function submitWaitlist(e: React.FormEvent) {
     e.preventDefault();
-    if (!waitlistName.trim() || !waitlistEmail.trim() || !waitlistHandle.trim() || !waitlistNiche) return;
+    if (!waitlistName.trim() || !waitlistHandle.trim()) return;
+    if (!waitlistPhotoFile) {
+      alert("Please upload your photo first.");
+      return;
+    }
 
     setWaitlistLoading(true);
     try {
       const isPlaceholder = !import.meta.env.VITE_SUPABASE_URL || import.meta.env.VITE_SUPABASE_URL.includes("placeholder.supabase.co");
+      
+      let photoUrl = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500";
 
-      if (isPlaceholder) {
-        await new Promise((resolve) => setTimeout(resolve, 1500));
-        console.log("Demo Mode: Simulated successful waitlist registration submit:", {
-          full_name: waitlistName.trim(),
-          email: waitlistEmail.trim(),
-          social_handle: waitlistHandle.trim(),
-          niche: waitlistNiche,
-          photo_name: waitlistPhotoFile ? waitlistPhotoFile.name : null
-        });
-        setWaitlistSubmitted(true);
-        fireConfetti();
-        return;
-      }
-
-      let photoUrl = "";
-      if (waitlistPhotoFile) {
+      if (!isPlaceholder && waitlistPhotoFile) {
         const fileExt = waitlistPhotoFile.name.split('.').pop();
         const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
         const filePath = `${fileName}`;
@@ -305,49 +296,41 @@ function Index() {
         photoUrl = publicUrl;
       }
 
-      // First, try to insert into waitlist table
-      let inserted = false;
-      try {
-        const { data, error } = await supabase
-          .from("waitlist")
-          .insert([
-            {
-              full_name: waitlistName.trim(),
-              email: waitlistEmail.trim(),
-              social_handle: waitlistHandle.trim(),
-              niche: waitlistNiche,
-              photo_url: photoUrl || null,
-            }
-          ]);
-        if (!error) {
-          inserted = true;
-        }
-      } catch (err) {
-        console.warn("Could not insert to waitlist table, trying registrations table:", err);
-      }
+      // Format WhatsApp message with image URL
+      const message = `Hi, I'm interested in joining the Pai Creator Summit 2026. Here are my details:
 
-      if (!inserted) {
-        // Fallback to registrations table
-        const { data, error } = await supabase
+Name: ${waitlistName.trim()}
+Profile: ${waitlistHandle.trim()}
+Photo: ${photoUrl}`;
+      
+      const whatsappUrl = `https://wa.me/919187127114?text=${encodeURIComponent(message)}`;
+
+      // Sync to Supabase in the background
+      if (!isPlaceholder) {
+        supabase
           .from("registrations")
           .insert([
             {
               full_name: waitlistName.trim(),
-              email: waitlistEmail.trim(),
+              email: "",
               social_handle: waitlistHandle.trim(),
-              niche: waitlistNiche,
-              photo_url: photoUrl || null,
+              niche: "Other",
+              photo_url: photoUrl,
             }
-          ]);
-
-        if (error) throw error;
+          ])
+          .then(({ error }) => {
+            if (error) console.error("Supabase logging error:", error);
+          });
       }
+
+      // Redirect immediately to prevent popup blocker issues
+      window.location.href = whatsappUrl;
 
       setWaitlistSubmitted(true);
       fireConfetti();
     } catch (error: any) {
-      console.error("Error submitting waitlist registration:", error.message);
-      alert(`Oops! Something went wrong: ${error.message || "Please try again."}`);
+      console.error("Error submitting waitlist redirect:", error);
+      alert(`Oops! Something went wrong uploading your photo: ${error.message || "Please try again."}`);
     } finally {
       setWaitlistLoading(false);
     }
@@ -488,17 +471,6 @@ function Index() {
                         placeholder="Enter your full name"
                       />
                     </Field>
-                    <Field label="Email Address">
-                      <input
-                        type="email"
-                        required
-                        disabled={waitlistLoading}
-                        value={waitlistEmail}
-                        onChange={(e) => setWaitlistEmail(e.target.value)}
-                        className="input disabled:opacity-50"
-                        placeholder="name@example.com"
-                      />
-                    </Field>
                     <Field label="Instagram / YouTube Profile">
                       <input
                         required
@@ -509,18 +481,7 @@ function Index() {
                         placeholder="https://instagram.com/yourusername"
                       />
                     </Field>
-                    <Field label="Primary Content Category">
-                      <select
-                        required
-                        disabled={waitlistLoading}
-                        value={waitlistNiche}
-                        onChange={(e) => setWaitlistNiche(e.target.value)}
-                        className="input appearance-none cursor-pointer disabled:opacity-50 text-foreground"
-                      >
-                        <option value="" disabled className="text-muted-foreground">Select your primary content category</option>
-                        {NICHES.map((n) => <option key={n} value={n} className="bg-card text-foreground">{n}</option>)}
-                      </select>
-                    </Field>
+
                     <div className="block">
                       <span className="mb-1.5 block text-[10px] font-semibold uppercase tracking-[0.2em] text-foreground/75">Creator Photo</span>
                       <div
